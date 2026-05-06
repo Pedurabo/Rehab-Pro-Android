@@ -1,0 +1,76 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- Helper Functions ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function getRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isTherapist() {
+      return getRole() == 'THERAPIST';
+    }
+
+    function isPatientOf(patientId) {
+      return get(/databases/$(database)/documents/users/$(patientId)).data.therapistId == request.auth.uid;
+    }
+
+    // --- Security Rules ---
+
+    // Temporary rule for debugging clinical assignment
+    match /{multiSegment=**} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Rehab Programs
+    match /rehabPrograms/{programId} {
+      allow read: if isSignedIn(); // Patients must be able to read their own
+      allow write: if isSignedIn() && isTherapist();
+    }
+
+    // User profiles
+    match /users/{userId} {
+      allow read: if isSignedIn() && (isOwner(userId) || (isTherapist() && isPatientOf(userId)));
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId);
+
+      match /completions/{id} {
+        allow read: if isSignedIn() && (isOwner(userId) || (isTherapist() && isPatientOf(userId)));
+        allow write: if isSignedIn() && isOwner(userId);
+      }
+
+      match /workout_summaries/{id} {
+        allow read: if isSignedIn() && (isOwner(userId) || (isTherapist() && isPatientOf(userId)));
+        allow write: if isSignedIn() && isOwner(userId);
+      }
+
+      match /check_ins/{id} {
+        allow read: if isSignedIn() && (isOwner(userId) || (isTherapist() && isPatientOf(userId)));
+        allow write: if isSignedIn() && isOwner(userId);
+      }
+
+      match /plans/{planId} {
+        allow read: if isSignedIn() && (isOwner(userId) || (isTherapist() && isPatientOf(userId)));
+        allow write: if isSignedIn() && isTherapist() && isPatientOf(userId);
+      }
+
+      match /notes/{noteId} {
+        allow read, write: if isSignedIn() && isTherapist() && isPatientOf(userId);
+      }
+    }
+
+    match /exercises/{exerciseId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+  }
+}

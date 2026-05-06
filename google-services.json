@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "647937466520",
+    "project_id": "rehab-cf132",
+    "storage_bucket": "rehab-cf132.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:647937466520:android:cc2016f117de375fc0f0ed",
+        "android_client_info": {
+          "package_name": "com.example.rehabpro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCjLCKsNb4ATRC87z9B8Fb0z-AyhYJvYws"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
